@@ -1,0 +1,25 @@
+# Build artifacts
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Maven
+.m2/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.log

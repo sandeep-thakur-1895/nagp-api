@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nagpapp-deployment
+  namespace: public
+  labels:
+    app: nagpapp
+spec:
+  replicas: 4
+  strategy:
+    type: RollingUpdate  # supports rolling updates by default
+  selector:
+    matchLabels:
+      app: nagpapp
+  template:
+    metadata:
+      labels:
+        app: nagpapp
+    spec:
+      containers:
+        - name: nagpapp-container
+          image: sandeeth/nagp-app:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: app-secrets

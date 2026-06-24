@@ -1,0 +1,20 @@
+apiVersion: v1 
+kind: ConfigMap
+metadata:
+  name: postgres-initdb
+  namespace: public
+data:
+  init.sql: |
+    CREATE TABLE IF NOT EXISTS records (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        description VARCHAR(255)
+    );
+
+    INSERT INTO records (name, description) VALUES
+    ('Record Alpha', 'First mock dataset record for verification'),
+    ('Record Beta', 'Second mock dataset record for verification'),
+    ('Record Gamma', 'Third mock dataset record for verification'),
+    ('Record Delta', 'Fourth mock dataset record for verification'),
+    ('Record Epsilon', 'Fifth mock dataset record for verification'),
+    ('Record Zeta', 'Sixth mock dataset record for verification');

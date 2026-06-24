@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nagpapp
+  namespace: public
+spec:
+  type: ClusterIP
+  selector:
+    app: nagpapp
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
