@@ -168,30 +168,3 @@ maxReplicas: 6
 | Scheduled Scaling | Medium (requires scheduler) | 50% off-peak | Medium |
 
 **Total Potential Savings**: 75-165% (combined effect of all optimizations)
-
----
-
-## 5. Monitoring & Continuous Optimization
-
-### Monthly Review Process
-1. Collect metrics from Kubernetes cluster (CPU, memory, pod count)
-2. Analyze cost trends and identify anomalies
-3. Adjust resource requests/limits based on 95th percentile metrics
-4. Update HPA parameters if cluster is consistently over/under provisioned
-5. Review storage usage and clean up unused PVCs
-
-### Tools to Deploy
-- **Metrics Server** (already in most K8s clusters)
-- **Prometheus** (optional, for historical metrics)
-- **Kubernetes Dashboard** (for visualization)
-- **kubecost** (optional, for actual cost tracking)
-
----
-
-## Next Steps
-
-1. ✅ Deploy current configuration with defined resource requests/limits
-2. ⏳ Monitor for 2 weeks to collect baseline metrics
-3. ⏳ Implement VPA for dynamic resource adjustment
-4. ⏳ Implement PDB for better node consolidation
-5. ⏳ Fine-tune HPA parameters based on observed utilization patterns
