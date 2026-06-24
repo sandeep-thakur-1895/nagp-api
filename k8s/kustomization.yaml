@@ -1,0 +1,22 @@
+# Kustomization file for NAGP API Application
+# Organized by deployment tier: namespaces → database → config → app
+
+resources:
+  # Namespace configuration
+  - config/namespaces.yaml
+  
+  # Database tier (PostgreSQL)
+  - database/postgres-pvc.yaml
+  - database/postgres-initdb-configmap.yaml
+  - database/postgres-deployment.yaml
+  - database/postgres-service.yaml
+  
+  # Application configuration (secrets and configs)
+  - config/app-config.yaml
+  - config/app-secrets.yaml
+  
+  # Application tier (Web App)
+  - app/nagpapp-deployment.yaml
+  - app/nagpapp-service.yaml
+  - app/nagpapp-ingress.yaml
+  - app/nagpapp-hpa.yaml
