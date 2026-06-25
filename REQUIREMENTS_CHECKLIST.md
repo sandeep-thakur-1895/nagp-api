@@ -1,8 +1,6 @@
 # NAGP Kubernetes Assignment - Requirements Checklist & Implementation
 
 **Project**: NAGP 2026 Technology Band III - Kubernetes, DevOps & FinOps Workshop  
-**Date**: June 23, 2026  
-**Repository**: nagp-api (Nagarro)
 
 ---
 
@@ -148,79 +146,9 @@ This document maps all assignment requirements to their implementation files and
 
 ---
 
-# SECTION 6: PROJECT DELIVERABLES
+# SECTION 6: SOLUTION OVERVIEW
 
-## 6.1 Source Code & Documentation
-
-| Deliverable | Status | Location | Notes |
-|---|---|---|---|
-| Source code repository | ⏳ **Pending** | GitHub/GitLab (to be provided) | DO NOT use company source code |
-| Dockerfile | ✅ **Done** | [Dockerfile](Dockerfile) | Multi-stage build for optimized image size |
-| All K8s YAML files | ✅ **Done** | [k8s/](k8s/) | Complete manifest structure organized by tier |
-| Docker Hub images | ⏳ **Pending** | (to be built & pushed) | Build command: `docker build -t <username>/nagp-app:latest .` |
-| README file | ✅ **Done** | [README.md](README.md) | Deployment steps and documentation |
-
-## 6.2 Documentation & Video Artifacts
-
-| Artifact | Status | Location | Requirements Met |
-|---|---|---|---|
-| Comprehensive documentation | ✅ **Done** | [REQUIREMENTS_CHECKLIST.md](REQUIREMENTS_CHECKLIST.md) (this file) | • Requirement Understanding ✅ • Assumptions ✅ • Solution Overview ✅ • Resource Justification ✅ |
-| FinOps optimization guide | ✅ **Done** | [FINOPS.md](FINOPS.md) | 3+ cost optimization opportunities with implementation details |
-| Screen recording video | ⏳ **Pending** | (to be recorded) | Must show: • All objects deployed ✅ • API call retrieving records ✅ • Pod self-healing demo ✅ • Database persistence demo ✅ • Deployment strategy & HPA ✅ |
-
----
-
-# SECTION 7: FILES CHANGED/CREATED
-
-## 7.1 New/Modified Files During Implementation
-
-| File | Change Type | Purpose |
-|---|---|---|
-| [FINOPS.md](FINOPS.md) | **Created** | Comprehensive FinOps strategy with 5+ optimization opportunities |
-| [k8s/kustomization.yaml](k8s/kustomization.yaml) | **Updated** | Reorganized resources with proper dependency ordering |
-| [k8s/app/nagpapp-deployment.yaml](k8s/app/nagpapp-deployment.yaml) | **Updated** | Added resource requests/limits, liveness/readiness probes |
-| [k8s/app/nagpapp-hpa.yaml](k8s/app/nagpapp-hpa.yaml) | **Updated** | Fixed namespace from `default` to `public` |
-| [REQUIREMENTS_CHECKLIST.md](REQUIREMENTS_CHECKLIST.md) | **Created** | This comprehensive requirements mapping document |
-
----
-
-# SECTION 8: ASSUMPTIONS & DESIGN DECISIONS
-
-## 8.1 Technical Assumptions
-
-1. **Kubernetes Cluster**: K8s 1.24+ with default StorageClass available
-2. **Ingress Controller**: NGINX or equivalent ingress controller installed
-3. **Container Registry**: Docker Hub access for image push/pull
-4. **Java Version**: Java 17 (supported by Eclipse Temurin)
-5. **Database**: PostgreSQL 14 (stable, production-ready)
-
-## 8.2 Design Decisions
-
-| Decision | Rationale | Alternative Considered |
-|---|---|---|
-| Spring Boot 3.2.5 | Latest stable version with Java 17 support | Spring Boot 2.x (legacy, no Java 17) |
-| PostgreSQL 14 | Stability, production-ready, widespread support | MySQL, MongoDB (would change persistence model) |
-| ConfigMap for DB config | Kubernetes-native, easy to update | Environment variables only (less flexible) |
-| Secrets for passwords | Encrypts sensitive data at rest (with etcd encryption) | Plain text ConfigMap (security risk) |
-| HPA with CPU metrics | Simple, no custom metrics required | Memory-based or custom metrics (complexity) |
-| PVC for database | Data persistence across pod restarts | ephemeral storage (data loss on restart) |
-| Ingress for external access | Standard K8s approach, load balancer ready | NodePort (less scalable) |
-| Multi-stage Dockerfile | Reduces image size, production-ready | Single stage (larger images, security issues) |
-
-## 8.3 Production Considerations
-
-- **Secrets Management**: Consider using Kubernetes Secrets store or HashiCorp Vault for production
-- **Monitoring**: Deploy Prometheus + Grafana for metrics visualization
-- **Logging**: Implement ELK or similar for centralized logging
-- **TLS/SSL**: Add certificate management (cert-manager) for HTTPS
-- **Network Policies**: Add NetworkPolicy for traffic segmentation
-- **RBAC**: Configure role-based access control for production environment
-
----
-
-# SECTION 9: SOLUTION OVERVIEW
-
-## 9.1 Architecture
+## 6.1 Architecture
 
 ```
 ┌─────────────────────────────────────────────┐
@@ -281,7 +209,7 @@ This document maps all assignment requirements to their implementation files and
 └─────────────────────────────────────────────┘
 ```
 
-## 9.2 Data Flow
+## 6.2 Data Flow
 
 ```
 User Request
@@ -305,9 +233,9 @@ Response: JSON array of records
 
 ---
 
-# SECTION 10: RESOURCE JUSTIFICATION
+# SECTION 7: RESOURCE JUSTIFICATION
 
-## 10.1 Service API Tier (nagpapp)
+## 7.1 Service API Tier (nagpapp)
 
 ### CPU: 100m requests, 500m limits
 **Justification**:
@@ -323,7 +251,7 @@ Response: JSON array of records
 - Request of 256Mi (2x overhead) ensures stability
 - Limit of 512Mi (2x request) prevents OOM kills from memory leaks
 
-## 10.2 Database Tier (PostgreSQL)
+## 7.2 Database Tier (PostgreSQL)
 
 ### Storage: 1Gi PVC
 **Justification**:
@@ -339,7 +267,7 @@ Response: JSON array of records
 - PVC ensures persistence across pod restarts
 - Production setup would use managed database or multi-replica StatefulSet
 
-## 10.3 HPA Configuration
+## 7.3 HPA Configuration
 
 ### Min: 2, Max: 6 replicas
 **Justification**:
@@ -380,11 +308,6 @@ kubectl get ingress -n public
 kubectl logs -f deployment/nagpapp-deployment -n public
 ```
 
-## Port Forward for Local Testing
-```bash
-kubectl port-forward svc/nagpapp 8080:80 -n public
-curl http://localhost:8080/api/records
-```
 
 ---
 
@@ -413,9 +336,4 @@ curl http://localhost:8080/api/records
 | FO-2 | 3+ cost optimizations | 5 opportunities documented | ✅ | [FINOPS.md](FINOPS.md) |
 | FO-3 | Resource optimization | Monitoring & adjustment plan | ✅ | [FINOPS.md](FINOPS.md#3-resource-optimization-based-on-observed-metrics) |
 
----
-
-**Document Last Updated**: June 23, 2026  
-**Status**: Complete  
-**Next Steps**: Build/push Docker images, deploy to Kubernetes cluster, record demonstration video
 

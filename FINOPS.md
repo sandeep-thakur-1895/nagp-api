@@ -1,29 +1,28 @@
-# FinOps Optimization Strategy
+# FinOps Notes
 
-## 1. Resource Requests & Limits (Implemented)
+## 1. Current Resource Settings
 
 ### Service/API Tier (nagpapp)
-- **CPU Requests**: 100m (min guaranteed)
-- **CPU Limits**: 500m (max allowed)
-- **Memory Requests**: 256Mi (min guaranteed)
-- **Memory Limits**: 512Mi (max allowed)
+- **CPU request**: 100m
+- **CPU limit**: 500m
+- **Memory request**: 256Mi
+- **Memory limit**: 512Mi
 
-These values are optimized based on Spring Boot typical resource consumption, preventing over-provisioning while maintaining performance.
+These are the current settings for the API pod. The request values are what Kubernetes reserves for the pod, and the limit values are the maximum it can use.
 
 ---
 
-## 2. Cost Optimization Opportunities
+## 2. What can be improved
 
-### Opportunity #1: Vertical Pod Autoscaling (VPA)
-**Current State**: Fixed resource requests/limits
-**Optimization**: Implement Vertical Pod Autoscaler to dynamically adjust CPU/memory based on actual usage patterns.
+### A. Vertical Pod Autoscaler (VPA)
+Right now the app uses fixed CPU and memory values. VPA can adjust those values automatically based on actual usage.
 
-**Expected Impact**:
-- Reduces wasted reserved resources (unused allocations)
-- Automatically scales down underutilized pods
-- Cost savings: 15-30% reduction in over-provisioned resources
+Benefits:
+- Uses less reserved capacity when the app is idle
+- Gives the app more resources when it needs them
+- Helps reduce waste
 
-**Implementation**:
+Example:
 ```yaml
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
@@ -32,11 +31,11 @@ metadata:
   namespace: public
 spec:
   targetRef:
-    apiVersion: "apps/v1"
+    apiVersion: apps/v1
     kind: Deployment
     name: nagpapp-deployment
   updatePolicy:
-    updateMode: "Auto"
+    updateMode: Auto
   resourcePolicy:
     containerPolicies:
     - containerName: nagpapp-container
@@ -48,16 +47,10 @@ spec:
         memory: 1Gi
 ```
 
-### Opportunity #2: Pod Disruption Budgets (PDB) + Bin Packing
-**Current State**: HPA scales 2-6 replicas without cluster-level optimization
-**Optimization**: Implement PDB to allow controlled disruptions during cluster scaling, enabling better node bin-packing and cluster consolidation.
+### B. Pod Disruption Budget (PDB)
+A PDB helps the cluster manage pod restarts and scaling without taking down the service.
 
-**Expected Impact**:
-- Enables cluster autoscaler to consolidate nodes
-- Reduces number of underutilized nodes
-- Cost savings: 20-40% reduction in node infrastructure costs
-
-**Implementation**:
+Example:
 ```yaml
 apiVersion: policy/v1
 kind: PodDisruptionBudget
@@ -71,21 +64,10 @@ spec:
       app: nagpapp
 ```
 
-### Opportunity #3: Right-Sizing Database Resources & Storage Optimization
-**Current State**: 
-- PostgreSQL runs with no resource limits
-- PVC allocated 1Gi with standard storage class
+### C. Database resource limits
+The PostgreSQL pod currently has no limits. That means it could use more CPU or memory than expected.
 
-**Optimization**: 
-- Add resource requests/limits to database tier
-- Use cheaper storage tiers for non-critical data, cheaper retention policies
-
-**Expected Impact**:
-- Prevents database from consuming unlimited resources
-- Allocates resources efficiently (500m CPU, 256Mi base memory)
-- Cost savings: 25-35% on database infrastructure + storage optimization
-
-**Implementation**:
+Recommended settings:
 ```yaml
 resources:
   requests:
@@ -94,70 +76,41 @@ resources:
   limits:
     cpu: "500m"
     memory: "512Mi"
-
-# Storage: Consider using standard-rwo instead of standard
-storageClassName: standard-rwo  # Regional redundancy not needed for test cluster
+storageClassName: standard-rwo
 ```
 
 ---
 
-## 3. Resource Optimization Based on Observed Metrics
+## 3. What to watch in the cluster
 
-### Monitoring Strategy
-**Tools**: Kubernetes Metrics Server + Prometheus (optional)
+### CPU
+- Aim for about 60-70% average CPU use
+- If it is consistently below 30%, we can lower the request
+- If it is above 85%, we should raise the limit
 
-**Key Metrics to Monitor**:
-1. **CPU Utilization**: `container_cpu_usage_seconds_total`
-   - Target: 60-70% average utilization
-   - Action: If consistently <30%, reduce CPU limit; if >85%, increase
+### Memory
+- Aim for 70-80% of the requested memory
+- If it is below 50%, we can lower the request
+- If it is above 90%, we should increase the limit
 
-2. **Memory Utilization**: `container_memory_working_set_bytes`
-   - Target: 70-80% of requested memory
-   - Action: If consistently <50%, reduce memory request; if >90%, increase limit
-
-3. **Pod Count**: Driven by HPA metrics
-   - Current: 2-6 replicas based on 50% CPU utilization
-   - Opportunity: Adjust target utilization to 70% to run fewer replicas
-
-### Optimization Actions
-
-#### Action 1: Adjust HPA Target CPU Utilization
-**Current**: 50% average utilization
-**Proposed**: 70% average utilization
-**Benefit**: Reduces average pod count by 1-2 replicas (15-30% compute savings)
-
-```yaml
-# Modified HPA configuration
-metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 70  # Increased from 50%
-```
-
-#### Action 2: Right-Size Resource Requests Based on Metrics
-**Current Requests**: 100m CPU, 256Mi memory
-**Analyze**: 
-- If 95th percentile CPU < 50m, reduce to 75m
-- If 95th percentile Memory < 200Mi, reduce to 192Mi
-- If 95th percentile shows spikes, adjust limits appropriately
-
-#### Action 3: Implement Horizontal Pod Consolidation
-- Reduce `minReplicas` from 2 to 1 for off-peak hours
-- Use scheduled scaling to 2 replicas during business hours
-- Cost savings: 50% during off-peak
-
-```yaml
-# Scheduled downscaling (requires KEDA or cron jobs)
-minReplicas: 1  # During off-peak (9 PM - 9 AM)
-maxReplicas: 6
-```
+### Pod count
+- Current HPA target is 50% CPU
+- Raising that to 70% can reduce the number of pods
+- That saves compute costs without hurting performance
 
 ---
 
-## 4. Cost Optimization Summary Table
+## 4. Simple action plan
+
+1. Keep the current resource requests and limits for now.
+2. Add VPA so resource settings can adjust automatically.
+3. Add a PDB so the app can handle maintenance and scaling better.
+4. Set limits for PostgreSQL so the database does not grow out of control.
+5. Watch the cluster for 2 weeks to collect usage data and adjust accordingly.
+
+---
+
+## 5. Cost optimization summary
 
 | Optimization | Implementation Effort | Estimated Savings | Priority |
 |---|---|---|---|
@@ -168,3 +121,13 @@ maxReplicas: 6
 | Scheduled Scaling | Medium (requires scheduler) | 50% off-peak | Medium |
 
 **Total Potential Savings**: 75-165% (combined effect of all optimizations)
+
+---
+
+## 6. Quick summary
+
+- `requests` are the minimum resources Kubernetes reserves.
+- `limits` are the max resources the pod can use.
+- These settings help the app run steadily while avoiding waste.
+- VPA and PDB are the next steps to make resource use smarter.
+- Database pod limits should be added to keep costs under control.
