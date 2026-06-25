@@ -60,7 +60,7 @@ nagp-api/
 │       ├── nagpapp-deployment.yaml        # Spring Boot app, 4 replicas, probes, resources
 │       ├── nagpapp-service.yaml           # ClusterIP service
 │       ├── nagpapp-ingress.yaml           # Ingress for external access
-│       └── nagpapp-hpa.yaml               # HPA: 2-6 replicas on 50% CPU
+│       └── nagpapp-hpa.yaml               # HPA: 2-4 replicas on 50% CPU
 │
 ├── Dockerfile                             # Multi-stage build (Maven + JRE)
 ├── pom.xml                                # Maven dependencies
@@ -149,7 +149,7 @@ Service tier (`k8s/app/nagpapp-deployment.yaml`):
 - **Limits**: 500m CPU, 512Mi Memory (maximum allowed)
 
 ### HPA Configuration
-Scales automatically between 2-6 replicas:
+Scales automatically between 2-4 replicas:
 - **Metric**: CPU utilization
 - **Target**: 50% (adjustable in FinOps strategy)
 - **File**: `k8s/app/nagpapp-hpa.yaml`
@@ -162,7 +162,7 @@ Scales automatically between 2-6 replicas:
 - **Rolling Updates**: Graceful pod replacement
 - **Self-Healing**: Liveness & Readiness probes (15s failure threshold)
 - **Load Balancing**: 4 replicas with automatic distribution
-- **Horizontal Scaling**: HPA scales 2-6 pods based on CPU metrics
+- **Horizontal Scaling**: HPA scales 2-4 pods based on CPU metrics
 - **External Access**: Ingress routes HTTP traffic to service
 
 ### ✅ Database Tier
