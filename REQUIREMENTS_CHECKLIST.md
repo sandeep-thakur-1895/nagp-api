@@ -35,7 +35,7 @@ This document maps all assignment requirements to their implementation files and
 | 4 replicas | ✅ **Done** | [k8s/app/nagpapp-deployment.yaml](k8s/app/nagpapp-deployment.yaml#L9) | `replicas: 4` |
 | Be externally accessible | ✅ **Done** | [k8s/app/nagpapp-ingress.yaml](k8s/app/nagpapp-ingress.yaml) | Ingress routes external traffic to service |
 | Demonstrate self-healing | ✅ **Done** | [k8s/app/nagpapp-deployment.yaml](k8s/app/nagpapp-deployment.yaml#L48-L65) | Liveness & Readiness probes with HTTP health checks |
-| Demonstrate HPA on Service API | ✅ **Done** | [k8s/app/nagpapp-hpa.yaml](k8s/app/nagpapp-hpa.yaml) | Min 2, Max 6 replicas; Scales on 50% CPU utilization |
+| Demonstrate HPA on Service API | ✅ **Done** | [k8s/app/nagpapp-hpa.yaml](k8s/app/nagpapp-hpa.yaml) | Min 2, Max 4 replicas; Scales on 50% CPU utilization |
 
 ## 1.4 Resource Management
 
